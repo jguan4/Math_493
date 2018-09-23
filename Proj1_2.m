@@ -1,6 +1,3 @@
-% Test example for nonlinear least squares fitting
-% Expected solution: a = 2;
-
 close all;
 clear all;
 format long;

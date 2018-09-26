@@ -17,7 +17,7 @@ method = 2; % 1=fminsearch, 2=Newton
 
 if (method==1)
     % Finding the parameter values minimizing SSE error using built-in function
-    [a_opt,fval,exitflag,output] = fminsearch(@SSE,[xt0])
+    [a_opt,fval,exitflag,output] = fminsearch(@SSE,[a_opt_init])
     
 else
     %Newton-Raphson method
@@ -50,30 +50,32 @@ else
         error(k+1) = SSE(a_opt);
         
         if (norm(aa(k+1)-aa(k))<delta1) | (abs(SSE(aa(k+1))-SSE(aa(k)))<delta2)
+            % Plotting convergence of parameters
+            figure(2);
+            subplot(1,2,1);
+            set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
+            hold on;
+            title('\theta')
+            xlabel("Iteration Step")
+            axis square;
+            plot(1:length(aa),aa,'r.-');
+            
+            subplot(1,2,2);
+            set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
+            hold on;
+            title('SSE');
+            xlabel("Iteration Step")
+            axis square;
+            plot(1:length(aa),error,'k.-');
             break;
         end
     end
-    
 end
 
-% Plotting convergence of parameters
-figure(2);
-subplot(1,2,1);
-hold on;
-title('\theta')
-axis square;
-plot(1:length(aa),aa,'r.-');
-
-subplot(1,2,2);
-hold on;
-title('SSE');
-axis square;
-plot(1:length(aa),error,'k.-');
-
 if (plotting==1)
-
+    
     [tspan,x] = ode45(@(t,x)system(t,x,a_opt),texp,xt0);
-
+    
     figure(1);
     set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
     hold on;
@@ -82,7 +84,7 @@ if (plotting==1)
     plot(tspan,x,'r.');
     plot(texp,xexp,'bo');
     legend('ODE','data');
-
+    
 end
 
 function z = SSE(a)

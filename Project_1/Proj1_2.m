@@ -16,7 +16,7 @@ method =2; % 1=fminsearch, 2=Newton
 
 if (method==1)
     % Finding the parameter values minimizing SSE error using built-in function
-    [a_opt,fval,exitflag,output] = fminsearch(@SSE,xt0_init)
+    [a_opt,fval,exitflag,output] = fminsearch(@SSE,[a_opt_init xt0_init])
     
 else
     %Newton-Raphson method
@@ -49,30 +49,35 @@ else
         error(k+1) = SSE(a_opt);
         
         if (norm(aa(k+1,:)-aa(k,:))<delta1) | (abs(SSE(aa(k+1,:))-SSE(aa(k,:)))<delta2)
+            % Plotting convergence of parameters
+            figure(2);
+            subplot(1,3,1);
+            set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
+            hold on;
+            title('\theta')
+            xlabel("Iteration Step")
+            axis square;
+            plot(1:length(aa(:,1)),aa(:,1),'r.-');
+            
+            subplot(1,3,2);
+            set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
+            hold on;
+            title('x_0')
+            xlabel("Iteration Step")
+            axis square;
+            plot(1:length(aa(:,2)),aa(:,2),'r.-');
+            
+            subplot(1,3,3);
+            set(gca,'FontName','Arial','FontSize',14,'FontWeight','Bold','LineWidth', 1);
+            hold on;
+            title('SSE');
+            xlabel("Iteration Step")
+            axis square;
+            plot(1:length(aa(:,1)),error,'k.-');
             break;
         end
     end
 end
-
-% Plotting convergence of parameters
-figure(2);
-subplot(1,3,1);
-hold on;
-title('\theta')
-axis square;
-plot(1:length(aa(:,1)),aa(:,1),'r.-');
-
-subplot(1,3,2);
-hold on;
-title('x_0')
-axis square;
-plot(1:length(aa(:,2)),aa(:,2),'r.-');
-
-subplot(1,3,3);
-hold on;
-title('SSE');
-axis square;
-plot(1:length(aa(:,1)),error,'k.-');
 
 if (plotting==1)
     

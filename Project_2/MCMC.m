@@ -6,7 +6,7 @@ nsteps = 5000;
 burntime = 100;
 D=0.01;
 
-load('.\data4\data4.mat');
+load('.\data4\data4_1.mat');
 t=xx;
 sz = length(t);
 sigma=0.03;

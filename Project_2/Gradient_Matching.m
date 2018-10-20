@@ -1,7 +1,8 @@
 close all;
 clear all;
 format long;
-% [3.12912405083164,5.34662575325762]
+% Using MCMC: [3.12912405083164,5.34662575325762]
+% Using Gradient Matching: [5.35904799708446]
 
 load('.\data4\data4.mat');
 t=xx;

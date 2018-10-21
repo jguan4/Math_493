@@ -7,12 +7,12 @@ t=xx;
 syn_data = yy;
 
 num_poly = 11; % number of polynomial approximation in collocation
-k = 5; % order of collocation
+k = 4; % order of collocation
 n_steps = 100;
 tol = 1e-3;
 theta_est(1)=1; % parameter estimation initialization
 
-method = 2; % 1: with smoothing; 2: without smoothing
+method = 1; % 1: with smoothing; 2: without smoothing
 
 if method == 1
     tau = linspace(t(1),t(end),201);
@@ -41,15 +41,20 @@ if method == 1
     
 elseif method ==2
     xt_0 = syn_data(1);
-    dt = t(2)-t(1);
-    Dx_m = diag(-ones([1,length(t)]));
-    Dx_m = Dx_m + diag(2*ones([1,length(t)-1]),1);
-    Dx = 1/dt.*Dx_m*syn_data';
     
     for n = 2: n_steps
-        J = syn_data';
+        tt = linspace(t(1),t(end),1000);
+        [tspan,xx] = ode45(@(t,x)system(t,x,theta_est(n-1)),tt,xt_0);
+        x = interp1(tt,xx,t);
+        
+        dt = t(2)-t(1);
+        Dx_m = diag(-ones([1,length(t)]));
+        Dx_m = Dx_m + diag(2*ones([1,length(t)-1]),1);
+        Dx = 1/dt.*Dx_m*x';
+        
+        J = -x';
         H = J'*J;
-        g = J'*(Dx+theta_est(n-1).*syn_data');
+        g = J'*(Dx+theta_est(n-1).*x');
         theta_est(n) = theta_est(n-1)-H\g;
         
         error(n-1) = SSE(t,xt_0, theta_est(n), syn_data);

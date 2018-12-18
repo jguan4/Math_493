@@ -12,13 +12,13 @@ texp = hiv_data(:,1);
 xexp = hiv_data(:,2:end);
 xt0 = [.9e6 4000 .1 .1 1 12];
 
-mcmc_flag=1; % 1 to do mcmc, 0 to skip and just graph
+mcmc_flag=0; % 1 to do mcmc, 0 to skip and just graph
 
 n=length(xexp); %# of data points
 p=6; % #of parameters
 nsteps = 5000;
 D=.03;
-burntime=0;
+burntime=1;
 
 q0 = [.3 .7 .01 1e-4 1e4 100]; %initial parameter guesses can be based on fminsearch etc
 
@@ -113,6 +113,7 @@ for i=[1:5]
         hold on;
         subplot(5,5,(i-1)*5+j);
         scatter(thetasave(burntime:end,i),thetasave(burntime:end,j));
+        lsline;
         xlabel(var_names(i));
         ylabel(var_names(j));
     end

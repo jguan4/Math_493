@@ -1,25 +1,28 @@
-load("/home/meglstudent/Downloads/hiv_data.mat");
 format long
 global tspan
 global texp
 global xexp
 global xt0
 
+close all;
+
+load("/home/meglstudent/Downloads/hiv_data.mat");
 tspan = (0:.1:200);
 texp = hiv_data(:,1);
 xexp = hiv_data(:,2:end);
 xt0 = [.9e6 4000 .1 .1 1 12];
 
-mcmc_flag=0; % 1 to do mcmc, 0 to skip and just graph
+mcmc_flag=1; % 1 to do mcmc, 0 to skip and just graph
 
 n=length(xexp); %# of data points
 p=6; % #of parameters
-nsteps = 1000;
+nsteps = 5000;
 D=.03;
+burntime=0;
 
 q0 = [.3 .7 .01 1e-4 1e4 100]; %initial parameter guesses can be based on fminsearch etc
 
-sigmas = [750, 20, 100, 15, 1000, 1]; %These are guesses at the variance of the variables in an effort 
+sigmas = [750, 20, 100, 15, 1000, 1]; %These are guesses at the variance of the variables in an effort to limit sse size 
 
 if exist('Q')==0
     Q = fminsearch(@(Q)SSE (Q,tspan,xt0,xexp,texp),q0);
@@ -92,16 +95,29 @@ title('Sum of squares error');
 plot(chisave);
 drawnow;
 
-%parameter density distributions
+%density distributions
 figure(2);
 var_names = ['b_{E}' '\delta' 'd_{1}' 'k_{2}' '\lambda_{1}' 'K_{b}'];
 for i = [1:5]
     subplot(3,2,i);
     hold on;
-    title(text(var_names(i),'interpreter','latex'));
-    h = histc(thetasave(100:end,i),(min(thetasave(100:end,i)):(max(thetasave(100:end,i))-min(thetasave(100:end,i)))/25:max(thetasave(100:end,i))));
+    %title(text(var_names(i),'interpreter','tex'));
+    h = histc(thetasave(burntime:end,i),(min(thetasave(burntime:end,i)):(max(thetasave(burntime:end,i))-min(thetasave(burntime:end,i)))/25:max(thetasave(burntime:end,i))));
     plot(h)
 end
+
+%Correlation Scatter Plots
+figure(3);
+for i=[1:5]
+    for j=[1:i]
+        hold on;
+        subplot(5,5,(i-1)*5+j);
+        scatter(thetasave(burntime:end,i),thetasave(burntime:end,j));
+        xlabel(var_names(i));
+        ylabel(var_names(j));
+    end
+end
+
 
 
 

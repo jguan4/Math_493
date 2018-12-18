@@ -1,4 +1,4 @@
-load("/home/meglstudent/Downloads/hiv_data.mat");%
+load("/home/meglstudent/Downloads/hiv_data.mat");
 format long
 global tspan
 global texp
@@ -10,15 +10,12 @@ texp = hiv_data(:,1);
 xexp = hiv_data(:,2:end);
 xt0 = [.9e6 4000 .1 .1 1 12];
 
-mcmc_flag=1;
+mcmc_flag=0; % 1 to do mcmc, 0 to skip and just graph
 
 n=length(xexp); %# of data points
 p=6; % #of parameters
-nsteps = 100;
+nsteps = 1000;
 D=.03;
-
-thetasave = zeros(nsteps,p);
-chisave = zeros(nsteps);
 
 q0 = [.3 .7 .01 1e-4 1e4 100]; %initial parameter guesses can be based on fminsearch etc
 
@@ -41,9 +38,11 @@ y=interp1(t,y,texp);
 chi1 = sum(sum((xexp - y).^2).*(1./(2*sigmas.^2)));
 
 if mcmc_flag == 1
+    thetasave = zeros(nsteps,p);
+    chisave = zeros(nsteps);
     for n = 1: nsteps
         if mod(n,25)==0
-            %n
+            n
         end
         theta2 = abs(theta1 + randn(1,p).*(Q./25)); %this calculates proposed new parameter value
         %theta2
@@ -53,13 +52,12 @@ if mcmc_flag == 1
 
         [t,y] = ode45(@(t,X) sys(t,X,theta2),tspan,xt0); % model response for the new parameter value
         y=interp1(t,y,texp);
-        y(1:5)
 
         chi2=sum(sum((xexp - y).^2).*(1./(sigmas.^2))); %SS error for the new value
-        chi2
-        chi1
+        %chi2
+        %chi1
         ratio=exp((-chi2+chi1));%/(2*sigma^2)%); %ratio r
-        ratio
+        %ratio
 
         if rand < ratio % if ratio>1, holds automatically, otherwise holds with probability r=ratio
             theta1=theta2;
@@ -93,6 +91,19 @@ set(gca,'fontsize', 15);
 title('Sum of squares error');
 plot(chisave);
 drawnow;
+
+%parameter density distributions
+figure(2);
+var_names = ['b_{E}' '\delta' 'd_{1}' 'k_{2}' '\lambda_{1}' 'K_{b}'];
+for i = [1:5]
+    subplot(3,2,i);
+    hold on;
+    title(text(var_names(i),'interpreter','latex'));
+    h = histc(thetasave(100:end,i),(min(thetasave(100:end,i)):(max(thetasave(100:end,i))-min(thetasave(100:end,i)))/25:max(thetasave(100:end,i))));
+    plot(h)
+end
+
+
 
 function sse = SSE(Q,tspan,xt0,xexp,texp)
     for i = [1:length(Q)]

@@ -45,12 +45,15 @@ if mcmc_flag == 1
         if mod(n,25)==0
             %n
         end
-        theta2 = abs(theta1 + D.*randn(1,p));%.*(Q/25)); %this calculates proposed new parameter value
+        theta2 = abs(theta1 + randn(1,p).*(Q./25)); %this calculates proposed new parameter value
+        %theta2
+        %theta1
         % p is the number of parameters and
         % D is the guess standard deviation
 
-        [t,y] = ode45(@(t,X) sys(t,X,Q),tspan,xt0); % model response for the new parameter value
+        [t,y] = ode45(@(t,X) sys(t,X,theta2),tspan,xt0); % model response for the new parameter value
         y=interp1(t,y,texp);
+        y(1:5)
 
         chi2=sum(sum((xexp - y).^2).*(1./(sigmas.^2))); %SS error for the new value
         chi2

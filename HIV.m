@@ -1,4 +1,4 @@
-format long%
+format long
 global tspan
 global texp
 global xexp
@@ -16,7 +16,7 @@ mcmc_flag=0; % 1 to do mcmc, 0 to skip and just graph
 
 n=length(xexp); %# of data points
 p=6; % #of parameters
-nsteps = 5000;
+nsteps = 10000;
 D=.03;
 burntime=1;
 
@@ -43,7 +43,7 @@ chi1 = sum(sum((xexp - y).^2).*(1./(2*sigmas.^2)));
 if mcmc_flag == 1
     thetasave = zeros(nsteps,p);
     chisave = zeros(nsteps);
-    for n = 1: nsteps
+    for n = 1: nsteps+1
         if mod(n,25)==0
             n
         end
@@ -75,6 +75,38 @@ if mcmc_flag == 1
     end
 end
 
+means = mean(thetasave);
+[t,y] = ode45(@(t,X) sys(t,X,means),tspan,xt0);
+y=interp1(t,y,texp);
+
+
+stddevs = std(y);
+
+xhat= mean(texp);
+Sxx=0;
+for i=[1:length(texp)]
+    Sxx=Sxx+(texp(i)-xhat)^2;
+end
+upsilon = zeros(length(xexp),p);
+for i=[1:length(texp)]
+    for j = [1:p]
+        upsilon(i,j) = 1.96 * stddevs(j) *(1/length(texp) + (texp(i)-xhat)^2/Sxx)^(1/2);
+    end
+end
+
+ub = y+upsilon;
+lb = y-upsilon;
+figure(4);
+for i = [1:length(xt0)]
+    subplot(3,2,i)
+    hold on;
+    plot(texp,ub(:,i));
+    plot(texp,lb(:,i));
+    plot(texp,y(:,i));
+    plot(texp,xexp(:,i));
+end
+
+
 
 figure(1);
 
@@ -97,25 +129,30 @@ drawnow;
 
 %density distributions
 figure(2);
-var_names = ['b_{E}' '\delta' 'd_{1}' 'k_{2}' '\lambda_{1}' 'K_{b}'];
-for i = [1:5]
+var_names = {'$b_{E}$' '$\delta$' '$d_{1}$' '$k_{2}$' '$\lambda_{1}$' '$K_{b}$'};
+for i = [1:6]
     subplot(3,2,i);
     hold on;
-    %title(text(var_names(i),'interpreter','tex'));
+    title(var_names(i),'interpreter','latex');
     h = histc(thetasave(burntime:end,i),(min(thetasave(burntime:end,i)):(max(thetasave(burntime:end,i))-min(thetasave(burntime:end,i)))/25:max(thetasave(burntime:end,i))));
-    plot(h)
+    plot(h);
+    xticklabels(min(thetasave(burntime:end,i)):(max(thetasave(burntime:end,i))-min(thetasave(burntime:end,i)))/25:max(thetasave(burntime:end,i)));
+   
+    
 end
 
 %Correlation Scatter Plots
 figure(3);
 for i=[1:5]
-    for j=[1:i]
-        hold on;
-        subplot(5,5,(i-1)*5+j);
-        scatter(thetasave(burntime:end,i),thetasave(burntime:end,j));
-        lsline;
-        xlabel(var_names(i));
-        ylabel(var_names(j));
+    for j=[2:6]
+        if i<j
+            hold on;
+            subplot(5,5,(i-1)*5+(j-1));
+            scatter(thetasave(burntime:end,i),thetasave(burntime:end,j));
+            lsline;
+            xlabel(var_names(i),'interpreter','latex');
+            ylabel(var_names(j),'interpreter','latex');
+        end
     end
 end
 

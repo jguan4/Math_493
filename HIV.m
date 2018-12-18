@@ -1,4 +1,4 @@
-format long
+format long%
 global tspan
 global texp
 global xexp

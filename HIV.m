@@ -10,17 +10,19 @@ texp = hiv_data(:,1);
 xexp = hiv_data(:,2:end);
 xt0 = [.9e6 4000 .1 .1 1 12];
 
-mcmc_flag=0;
+mcmc_flag=1;
 
 n=length(xexp); %# of data points
 p=6; % #of parameters
-nsteps = 10000;
+nsteps = 100;
+D=.03;
+
 thetasave = zeros(nsteps,p);
 chisave = zeros(nsteps);
 
 q0 = [.3 .7 .01 1e-4 1e4 100]; %initial parameter guesses can be based on fminsearch etc
 
-sigmas = [750, 20, 100, 15, 1000, 1];
+sigmas = [750, 20, 100, 15, 1000, 1]; %These are guesses at the variance of the variables in an effort 
 
 if exist('Q')==0
     Q = fminsearch(@(Q)SSE (Q,tspan,xt0,xexp,texp),q0);
@@ -41,9 +43,9 @@ chi1 = sum(sum((xexp - y).^2).*(1./(2*sigmas.^2)));
 if mcmc_flag == 1
     for n = 1: nsteps
         if mod(n,25)==0
-            n
+            %n
         end
-        theta2 = abs(theta1 + randn(1,p).*(Q/25)); %this calculates proposed new parameter value
+        theta2 = abs(theta1 + D.*randn(1,p));%.*(Q/25)); %this calculates proposed new parameter value
         % p is the number of parameters and
         % D is the guess standard deviation
 
@@ -51,7 +53,10 @@ if mcmc_flag == 1
         y=interp1(t,y,texp);
 
         chi2=sum(sum((xexp - y).^2).*(1./(sigmas.^2))); %SS error for the new value
+        chi2
+        chi1
         ratio=exp((-chi2+chi1));%/(2*sigma^2)%); %ratio r
+        ratio
 
         if rand < ratio % if ratio>1, holds automatically, otherwise holds with probability r=ratio
             theta1=theta2;

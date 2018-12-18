@@ -67,7 +67,7 @@ if mcmc_flag == 1
         end
 
         if n > burntime
-            thetasave(n-burntime,:)=theta1;
+            thetasave(n-burntime,:)=theta2;
             chisave(n-burntime)=chi1;
         end
 

@@ -12,7 +12,7 @@ n_steps = 100;
 tol = 1e-3;
 theta_est(1)=1; % parameter estimation initialization
 
-method = 2; % 1: with smoothing; 2: without smoothing
+method = 1; % 1: with smoothing; 2: without smoothing
 
 if method == 1
     tau = linspace(t(1),t(end),201);
@@ -50,12 +50,12 @@ elseif method ==2
         dt = t(2)-t(1);
         Dx_m = diag(-ones([1,length(t)]));
         Dx_m = Dx_m + diag(2*ones([1,length(t)-1]),1);
-        Dx = 1/dt.*Dx_m*syn_data';
+        Dx = 1/dt.*Dx_m*x';
         
-        J = syn_data';
+        J = -x';
         H = J'*J;
         g = J'*(Dx+theta_est(n-1).*x');
-        theta_est(n) = theta_est(n-1)+H\g;
+        theta_est(n) = theta_est(n-1)-H\g;
         
         error(n-1) = SSE(t,xt_0, theta_est(n), syn_data);
         if (theta_est(n)-theta_est(n-1))^2<1e-16 && error(n-1)<tol
